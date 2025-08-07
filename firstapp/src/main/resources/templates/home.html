@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>메인 홈</title>
+</head>
+<body>
+<h2>환영합니다 고객님,<span th:text="${userName}"></span>님!</h2><!-- user 엔티티에서 속성과 매핑 값 출력-->
+<button th:onclick="'location.href=\'' + @{/users/logout} + '\''">로그아웃</button>
+<p th:if="${message}" th:text="${message}" style="color: black;"></p> <!-- application에 create는 컴파일때마다 테이블 생성 후 값 대입-->
+</body> <!-- application에 업데이트는 컴파일때마다 생성된 테이블에 값 대입-->
+</html>
