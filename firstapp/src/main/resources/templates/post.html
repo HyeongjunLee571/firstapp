@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>게시글 생성</title></head>
+<body>
+<h1 th:text="${post.tltle}"></h1>
+<p th:text="${post.content}"></p>
+<p>작성자: <span th:text="${user.userName}"></span></p>
+<p>좋아요: <span th:text="${user.likes}"></span> </p>
+<from th:action="@{|/posts/${post.id}/like|}" method="post">
+    <button type="submit">게시글 좋아요</button><br>
+</from><br>
+
+<hr>
+<h3>댓글 목록</h3><br>
+<ul>
+    <li th:each="comment : ${comments}">
+        <strong th:text="${user.userName}"></strong> :
+        <span th:text="${comment.cotent}"></span>
+        (<span th:text="${comment.likes}"></span> 좋아요)
+        <form  th:action="@{|/posts/${post.id}/comments/${comment.id}/like|}" method="post" style="display:inline;">
+            <button type="submit">댓글 좋아요</button>
+        </form>
+    </li>
+</ul>
+
+<h3>댓글 작성</h3>
+<form th:action="@{|/posts/${post.id}/comments|}" method="post">
+    <input type="text" name="content" placeholder="댓글 내용"><!-- placeholder 내용은 박스 내 내용-->
+    <button type="submit">등록</button>
+</form><br>
+
+
+<button th:href="@{/posts}">목록이동</button><!-- Get으로 요청 보내기-->
+</body>
+</html>
