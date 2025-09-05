@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+</head>
+<body>
+<h1>게시글 작성</h1>
+<form th:action="@{/posts}" method="post" th:object="${post}">
+  제목: <input type="text" th:field="*{title}" placeholder="게시글 제목을 입력하세요"><!--post엔티티 속성과 매핑 set이고 placeholder이친구 텍스트 박스 내부의 이름-->
+  내용: <input type="text" th:field="*{content}" placeholder="내용을 입력하세요">
+  <input type="hidden" th:field="*{author}">
+  <button type="submit">게시글 등록</button>
+</form>
+<form th:action="@{/posts}" method="get">
+  <button type="submit">게시글 목록</button>
+</form>
+</body>
+</html>
