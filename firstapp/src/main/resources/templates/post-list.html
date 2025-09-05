@@ -10,10 +10,12 @@
     <tr th:each="post : ${posts}">
         <td th:text="${post.id}"></td>
         <td><a th:href="@{|/posts/${post.id}|}" th:text="${post.title}"></a></td>
-        <td th:text="${user.userName}"></td>
+        <td th:text="${post.author}"></td>
         <td th:text="${post.likes}"></td>
     </tr>
 </table>
-<button th:href="@{/posts/new}">새 글 작성</button>
+<form th:action="@{/posts/new}" method="get">
+    <button type="submit">새 글 작성</button>
+</form>
 </body>
 </html>

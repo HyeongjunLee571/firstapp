@@ -1,12 +1,7 @@
-package zuun.studying.firstapp.domain.controller;
+package zuun.studying.firstapp.domain.Controller;
 
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -15,8 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import zuun.studying.firstapp.entity.User;
 import zuun.studying.firstapp.exception.UserException;
 import zuun.studying.firstapp.service.UserService;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RequestMapping("/users")
