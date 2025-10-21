@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* 수평 중앙 */
+            align-items: center;    /* 수직 중앙 */
+            height: 100vh;          /* 화면 전체 높이 */
+            background:url('https://img.freepik.com/free-vector/watercolor-winter-background_23-2148734598.jpg?t=st=1759197410~exp=1759201010~hmac=0215cc3c25b8536d63d7466ee4f30ad12b0e549300c79b94935a1f357ec85fc6') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 600px;  /* 중앙 박스 너비 */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px; /* 높이를 길게 */
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            resize: vertical; /* 위/아래로만 크기 조절 */
+        }
+
+        .button-group {/*버튼에 스타일을 적용하는게 아닌 버튼이 담겨있는 공간에 스타일 적용 */
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .button-group button{/*그룹 내 버튼에다가 스타일 적용*/
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .button-group button:hover{
+            background: #e3f2fd;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4a90e2; /* 기본 하늘색 */
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #357ABD; /* hover 시 진한 색 */
+        }
+        .petal {
+            position: fixed;
+            top: -15px;
+            background: rgba(230,250,254,0.9);
+            clip-path: polygon(50% 0%, 60% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 40% 35%);
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h1>게시글 수정</h1>
+
+    <form th:action="@{/posts/{id}/edit(id=${post.id})}" method="post" th:object="${post}">
+        <label>제목</label>
+        <input type="text" name="title" th:value="${post.title}" placeholder="게시글 제목을 입력하세요">
+        <label>내용</label>
+        <textarea type="text" name="content" th:text="${post.content}" placeholder="내용을 입력하세요" maxlength="2000"></textarea>
+        <input type="hidden" th:field="*{author}">
+        <div class="button-group">
+            <form th:action="@{/posts}" method="get">
+                <button type="submit">게시글 목록</button>
+            </form>
+            <button type="submit">게시글 수정등록</button>
+        </div>
+    </form>
+</div>
+<script>
+    function createPetal() {
+        const petal = document.createElement("div");
+        petal.classList.add("petal");
+        const size = Math.random() * 8 + 6;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.animationDuration = Math.random() * 5 + 5 + "s";
+        petal.style.animationDelay = Math.random() * 3 + "s";
+        document.body.appendChild(petal);
+
+        setTimeout(() => petal.remove(), 10000);
+    }
+
+    setInterval(createPetal, 300);
+</script>
+</body>
+</html>
