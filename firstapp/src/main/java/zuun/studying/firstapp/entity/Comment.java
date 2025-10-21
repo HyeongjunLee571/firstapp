@@ -6,11 +6,11 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-//@Table(name = "comments")
+@Table(name = "comments")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Comment {
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

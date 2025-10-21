@@ -3,13 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <title>메인 홈</title>
+    <style>
+        body {
+            background: url('https://img.freepik.com/free-vector/watercolor-winter-background_23-2148734598.jpg?t=st=1759197410~exp=1759201010~hmac=0215cc3c25b8536d63d7466ee4f30ad12b0e549300c79b94935a1f357ec85fc6') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 상단과 하단 배치 */
+            font-family: Arial, sans-serif;
+        }
+
+        /* 상단 영역 */
+        header {
+            position: relative;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 50px;
+            color: #ffffff;
+            font-size: 5rem;
+        }
+
+        /* 하단 버튼 영역 */
+        footer {
+            position: fixed;
+            bottom: 80px;
+            right: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 버튼 스타일 */
+        footer button {
+            width: 360px;
+            padding: 20px 30px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            background-color: #a8d8ff;
+            transition: all 0.3s ease;
+        }
+
+        footer button:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            background-color: #87cfff;
+        }
+
+        .petal {
+            position: fixed;
+            top: -15px;
+            background: rgba(230,250,254,0.9);
+            clip-path: polygon(50% 0%, 60% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 40% 35%);
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+    </style>
 </head>
 <body>
-<h2>환영합니다 고객님,<span th:text="${userName}"></span>님!</h2><!-- user 엔티티에서 속성과 매핑 값 출력-->
+<header>
+    <h1 th:text="${userName+ '님의 사이트'}"></h1><!-- user 엔티티에서 속성과 매핑 값 출력-->
+</header>
+<footer>
+    <button th:onclick="'location.href=\'' + @{/posts} + '\''">게시글 목록</button>
 <form th:action="@{/posts/new}" method="get">
     <button type="submit">게시글 생성</button>
 </form>
+    <button th:onclick="'location.href=\'' + @{/users/login} + '\''">로그인</button>
 <button th:onclick="'location.href=\'' + @{/users/logout} + '\''">로그아웃</button>
+</footer>
 <p th:if="${message}" th:text="${message}" style="color: black;"></p> <!-- application에 create는 컴파일때마다 테이블 생성 후 값 대입-->
+
+<script>
+    function createPetal() {
+        const petal = document.createElement("div");
+        petal.classList.add("petal");
+        const size = Math.random() * 8 + 6;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.animationDuration = Math.random() * 5 + 5 + "s";
+        petal.style.animationDelay = Math.random() * 3 + "s";
+        document.body.appendChild(petal);
+
+        setTimeout(() => petal.remove(), 10000);
+    }
+
+    setInterval(createPetal, 300);
+</script>
 </body> <!-- application에 업데이트는 컴파일때마다 생성된 테이블에 값 대입-->
 </html>

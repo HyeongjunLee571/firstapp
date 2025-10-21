@@ -9,11 +9,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-//@Table(name = "post")
-@AllArgsConstructor
+@Table(name = "posts")
 @NoArgsConstructor
-@Builder
-public class Post {
+public class Post extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +27,17 @@ public class Post {
 
     private String author;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
+    @Column(name = "video_path")
+    private String videoPath;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Comment> comments;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }

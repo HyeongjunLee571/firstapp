@@ -1,32 +1,242 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>게시글</title></head>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head><meta charset="UTF-8">
+    <title>게시글</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #78dffc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 상단 버튼 영역 */
+        .top-buttons {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .top-buttons button {
+            padding: 8px 15px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            background-color: #a8d8ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .top-buttons button:hover {
+            background-color: #87cfff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 게시글 영역 A4 고정 */
+        .post-container {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-container h1 {
+            margin-bottom: 10px;
+        }
+
+        .post-container p {
+            margin-bottom: 15px;
+        }
+
+        .post-media img, .post-media video {
+            margin-bottom: 15px;
+        }
+
+        /* 하트 버튼 스타일 */
+        .like-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #ff4d4d;
+            margin-left: 5px;
+        }
+
+        /* 댓글 영역 */
+        .comments-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .comment-box {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px 15px;
+            background-color: #f9f9f9;
+            width: 80%;
+            position: relative;
+        }
+
+        .comment-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .comment-content p {
+            margin: 0;
+            text-align: left;
+        }
+
+        .comment-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 하트 좋아요 버튼 */
+        .like-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #ff4d4d;
+            transition: transform 0.2s;
+        }
+        .like-button:hover {
+            transform: scale(1.2);
+        }
+
+        /* 수정/삭제 버튼 */
+        .edit-button, .delete-button {
+            background-color: #a8d8ff;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .edit-button:hover {
+            background-color: #87cfff;
+        }
+        .delete-button:hover {
+            background-color: #ff7b7b;
+        }
+
+        .petal {
+            position: fixed;
+            top: -15px;
+            background: rgba(230,250,254,0.9);
+            clip-path: polygon(50% 0%, 60% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 40% 35%);
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+    </style>
+</head>
 <body>
+<div class="post-container">
 <h1 th:text="${post.title}"></h1>
 <p th:text="${post.content}"></p>
 <p>작성자: <span th:text="${post.author}"></span></p>
-<p>좋아요: <span th:text="${post.likes}"></span> </p>
-<from th:action="@{|/posts/${post.id}/like|}" method="post">
-    <button type="submit">좋아요</button><br>
-</from><br>
+<div>좋아요: <span th:text="${post.likes}"></span>
+<form th:action="@{|/posts/${post.id}/like|}" method="post" style="display: inline;">
+    <button type="submit" class="like-button">❤</button>
+</form></div>
 
-<hr><br>
-<ul>
-    <li th:each="comment : ${comments}">
-        <strong th:text="${comments.writer}"></strong> :
-        <span th:text="${comment.cotent}"></span>
-        (<span th:text="${comment.likes}"></span> 좋아요)
-        <form  th:action="@{|/posts/${post.id}/comments/${comment.id}/like|}" method="post" style="display:inline;">
-            <button type="submit">댓글 좋아요</button>
-        </form>
+<div th:if="${post.imagePath}">
+    <img th:src="${post.imagePath}" alt="이미지" style="width:300px">
+</div>
+<div th:if="${post.videoPath}">
+    <video controls width="400">
+        <source th:src="${post.videoPath}" alt="이미지" type="video/mp4">
+    </video>
+</div>
+
+<div class="post-actions">
+    <form th:action="@{/posts/{id}/edit(id=${post.id})}" method="get"><!-- (id=${post.id}) 포스트 아이디 대입 -->
+       <button type="submit">수정</button>
+    </form>
+    <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
+<button type="submit">삭제</button>
+    </form>
+</div>
+
+<hr>
+
+
+    <div class="comments">
+        <h3>댓글</h3>
+<ul class="comments-list">
+    <li th:each="comment : ${comments}" class="comment-box">
+        <div class="comment-header">
+        <span th:text="${comment.writer}"></span> :
+        </div>
+        <div class="comment-content">
+        <span th:text="${comment.content}"></span>
+        </div>
+
+        <div class="comment-actions">
+
+            <form  th:action="@{|/posts/${post.id}/comments/${comment.id}/like|}" method="post" style="display:inline;">
+                <button type="submit" class="like-button">❤ <span th:text="${comment.likes}">0</span></button>
+            </form>
+        </div>
     </li>
 </ul>
-<button th:href="@{/posts}">목록이동</button><!-- Get으로 요청 보내기-->
 
-<h3>댓글</h3><br>
-<form th:action="@{|/posts/${post.id}/comments|}" method="post">
-    <input type="text" name="content" placeholder="댓글 내용"><!-- placeholder 내용은 박스 내 내용-->
+<form th:action="@{|/posts/${post.id}/comments|}" method="post" class="comment-form">
+    <label for="content">
+        <input type="text" id = "content" name="content" placeholder="댓글 내용">
+    </label><!-- placeholder 내용은 박스 내 내용-->
     <button type="submit">등록</button>
+    <form th:action="@{/posts}" method="get">
+        <button type="submit">목록이동</button>
+    </form><!-- Get으로 요청 보내기-->
 </form>
+    </div>
+ </div>
+
+<script>
+    function createPetal() {
+        const petal = document.createElement("div");
+        petal.classList.add("petal");
+        const size = Math.random() * 8 + 6;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.animationDuration = Math.random() * 5 + 5 + "s";
+        petal.style.animationDelay = Math.random() * 3 + "s";
+        document.body.appendChild(petal);
+
+        setTimeout(() => petal.remove(), 10000);
+    }
+
+    setInterval(createPetal, 300);
+</script>
 </body>
 </html>

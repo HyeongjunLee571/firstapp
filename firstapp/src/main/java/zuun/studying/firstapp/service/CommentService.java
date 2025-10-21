@@ -1,11 +1,12 @@
 package zuun.studying.firstapp.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zuun.studying.firstapp.entity.Comment;
 import zuun.studying.firstapp.entity.Post;
 import zuun.studying.firstapp.exception.CommentException;
-import zuun.studying.firstapp.exception.PostException;
+import zuun.studying.firstapp.exception.PostNotException;
 import zuun.studying.firstapp.repository.CommentRepository;
 import zuun.studying.firstapp.repository.PostRepository;
 
@@ -19,18 +20,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
+    @Transactional
     public void addComment(Long postId, String content, String username) {
 
-        Post post = postRepository.findById(postId).orElseThrow(PostException::new); //(PostExcption::new) > new PostExcption()); 같음
+        Post post = postRepository.viewPost(postId).orElseThrow(()->
+                new PostNotException("존재 하지 않는 게시글입니다."));; //(PostExcption::new) > new PostExcption()); 같음
 
-        Comment comment = Comment.builder()
-                .content(content)
-                .writer(username)
-                .post(post)
-                .build();
-
-
-        commentRepository.save(comment);
+        commentRepository.createComment(content,username,post.getId(),0);
     }
 
     public List<Comment> getComments(Long postId) {
@@ -39,11 +35,12 @@ public class CommentService {
 
     }
 
+    @Transactional
     public void addLike(Long commentId) {
 
-        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentException::new);
+        Comment comment = commentRepository.viewComment(commentId).orElseThrow(CommentException::new);
 
-        comment.setLikes(comment.getLikes() + 1);
-        commentRepository.save(comment);
+        int commentLike = comment.getLikes()+1;
+        commentRepository.updateCommentLikes(comment.getId(),commentLike);
     }
 }

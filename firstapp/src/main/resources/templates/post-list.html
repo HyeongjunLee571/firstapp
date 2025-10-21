@@ -1,21 +1,312 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>게시글 목록</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 목록</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Sans KR", sans-serif;
+            background: #7ccffd;
+            overflow-x: hidden;
+        }
+
+        /* 🌸 꽃잎 애니메이션 */
+        .petal {
+            position: fixed;
+            top: -15px;
+            background: rgba(230,250,254,0.9);
+            clip-path: polygon(50% 0%, 60% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 40% 35%);
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+
+        /* 상단 네비게이션 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #7ccffd;
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        header .left, header .right {
+            display: flex;
+            align-items: center;
+        }
+
+        header .left button {
+            background: white;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        header .left button:hover {
+            background: #e3f2fd;
+        }
+
+        header .right span {
+            margin-right: 12px;
+            font-weight: bold;
+        }
+
+        header .right button {
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        header .right button:hover {
+            background: #e3f2fd;
+        }
+
+        /* 메인 콘텐츠 */
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .button-group{
+            display: flex;
+            justify-content: space-between;/* 버튼을 좌우 끝으로 배치 */
+            margin-top: 10px;
+        }
+
+        .button-group form{
+            margin: 0;
+        }
+
+        /* 게시글 카드 영역 */
+        .post-list {
+            flex: 2;
+            max-width: 700px;
+        }
+
+        .post-list button {
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .post-list button:hover {
+            background: #e3f2fd;
+        }
+
+        .post-card {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .post-card h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pagination button {
+            border: none;
+            background: #1976d2;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background: #0d47a1;
+        }
+
+        /* 우측 프로필 */
+        .profile {
+            flex: 0;
+            background: #fff;
+            border: 1px solid #474747;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            height: fit-content;
+        }
+
+        .profile img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .profile h4 {
+            margin: 10px 0 5px;
+        }
+
+        /* 📱 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .post-list, .profile {
+                width: 100%;
+                max-width: 100%;
+            }
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+        .pagination .bth {
+            padding: 5px 10px;
+            margin: 0 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            text-decoration: none;
+            color: black;
+        }
+        .pagination .bth.active {
+            border: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        .pagination .bth.disabled {
+            border: none;
+            color: black;
+            cursor: not-allowed;
+        }
+        .pagination .bth:hover {
+            background: #0d47a1;
+        }
+        .pagination .bth.active:hover {
+            background: #0d47a1;
+        }
+
+        .pagination .bth.disabled:hover {
+            background: #0d47a1;
+        }
+    </style>
+</head>
 <body>
-<h1>게시글 목록</h1>
-<table border="1">
-    <tr>
-        <th>ID</th><th>제목</th><th>작성자</th><th>좋아요</th>
-    </tr>
-    <tr th:each="post : ${posts}">
-        <td th:text="${post.id}"></td>
-        <td><a th:href="@{|/posts/${post.id}|}" th:text="${post.title}"></a></td>
-        <td th:text="${post.author}"></td>
-        <td th:text="${post.likes}"></td>
-    </tr>
-</table>
-<form th:action="@{/posts/new}" method="get">
-    <button type="submit">새 글 작성</button>
-</form>
+
+<!-- 상단바 -->
+<header>
+    <div class="left">
+        <button th:onclick="'location.href=\'' + @{/users/home} + '\''">🏠 홈</button>
+    </div>
+    <h2>게시글 목록</h2>
+    <div class="right">
+        <span th:text="${username}"></span>
+        <button th:onclick="'location.href=\'' + @{/users/logout} + '\''">로그아웃</button>
+    </div>
+</header>
+
+<!-- 메인 콘텐츠 -->
+<div class="container">
+    <!-- 게시글 리스트 -->
+    <div class="post-list">
+        <div th:each = "post:${posts}" class="post-card" >
+            제목 <h3><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a></h3>
+            작성자 <p th:text="${post.author}"></p>
+            내용 <p th:text="${post.content}"></p>
+
+            <div class="button-group">
+            <form th:action="@{/posts/new}" method="get">
+                <button type="submit">새 글 작성</button>
+            </form>
+            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
+            <button type="submit">삭제</button>
+            </form>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination">
+            <a th:if="${page > 1}" th:href="@{/posts(page=${page - 1})}" class="bth"> 이전 </a>
+            <span th:if="${page == 1}" class="bth disabled"> 이전 </span>
+
+            <span th:each="i : ${#numbers.sequence(1,totalPages)}">
+                <a th:if="${i !=page}" th:href="@{/posts(page=${i})}" class="bth" th:text="${i}"></a>
+            <span th:if="${i==page}" class="bth active" th:text="${i}"></span>
+                </span>
+
+            <a th:if="${page < totalPages}" th:href="@{/posts(page=${page + 1})}" class="bth"> 다음 </a>
+            <span th:if="${page == totalPages}" class="bth disabled"> 다음 </span>
+        </div>
+    </div>
+
+    <!-- 프로필 -->
+    <div class="profile">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="profile">
+        <h4 th:text="${username}"></h4>
+        <p th:text="${email}"></p>
+        <p>백엔드 개발자</p>
+    </div>
+</div>
+
+<!-- 🌸 꽃잎 생성 스크립트 -->
+<script>
+    function createPetal() {
+        const petal = document.createElement("div");
+        petal.classList.add("petal");
+        const size = Math.random() * 8 + 6;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = Math.random() * 100 + "vw";
+        petal.style.animationDuration = Math.random() * 5 + 5 + "s";
+        petal.style.animationDelay = Math.random() * 3 + "s";
+        document.body.appendChild(petal);
+
+        setTimeout(() => petal.remove(), 10000);
+    }
+
+    setInterval(createPetal, 300);
+</script>
 </body>
 </html>

@@ -48,15 +48,16 @@ public class FilterConfig {
                 //경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         //누구나 접근 가능(JWT 활용 X/권한 활용 X)
-                        .requestMatchers("/users/register", "/users/login").permitAll()
+                        .requestMatchers("/users/register", "/users/login","/users/register/**",
+                                "/posts","/users/home","/users/**").permitAll()
                         //(JWT 토큰 활용 o/권한 활용 o)
                         // URL 예시 : api/user/getuser 접속시 > USER 권한 있는 사람만 접근 가능
-                        .requestMatchers("api/user/**").hasRole("USER")
+                        .requestMatchers("/users/**").hasRole("USER")
                         //그외 모든 URL 요청 인증된것만 접근 가능하도록 설정(JWT 토큰 활용 O/권한 제한 X/권한 활용 O)
                         .anyRequest().authenticated()
                 ).formLogin(form -> form
                         .loginPage("/users/login")//접속 시 나오는 주소
-                        .usernameParameter("email")
+                        .usernameParameter("userName")
                         .loginProcessingUrl("/users/login")//포스트 요청시 엔드포인트 주소
                         .defaultSuccessUrl("/users/home",true)//200OK일때 주소처리
                         .failureUrl("/users/login?error=true")

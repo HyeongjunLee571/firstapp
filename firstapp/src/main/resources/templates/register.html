@@ -1,17 +1,163 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://img.freepik.com/free-vector/watercolor-winter-background_23-2148734598.jpg?t=st=1759197410~exp=1759201010~hmac=0215cc3c25b8536d63d7466ee4f30ad12b0e549300c79b94935a1f357ec85fc6') no-repeat center center fixed;
+      background-size: cover; /* 화면 전체에 맞게 채움 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .register-container {
+      background: #fff;
+      flex-direction: column;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+    .register-container h2 {
+      margin-bottom: 1rem;
+    }
+    .register-container input {
+      width: 100%;
+      padding: 500px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    .register-container button {
+      width: 100%;
+      padding: 10px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .register-container button:hover {
+      background: #357ABD;
+    }
+    .register-container p{
+      margin-top: 10px;
+    }
+    .register-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .register-group label {
+      width: 80px;
+      text-align: left;
+    }
+
+    .register-group input {
+      flex: none;
+      width: 200px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .petal {
+      position: fixed;
+      top: -15px;
+      background: rgba(230,250,254,0.9);
+      clip-path: polygon(50% 0%, 60% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 40% 35%);
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+   .register-group .error {
+      width: 100%;
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 5px;
+     text-align: left;
+     margin-left: 0;
+     white-space: nowrap;
+    }
+    .input-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .input-row label{
+      width: 80px;
+      text-align: left;
+    }
+    .input-row input {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0.2;
+      }
+    }
+  </style>
 </head>
 <body>
+<div class="register-container">
 <h2>회원가입</h2>
 <form th:action="@{/users/register}" th:object="${user}" method="post">
-  아이디: <input type="text" th:field="*{userName}" /><br><!--user엔티티 속성과 매핑 set -->
-  비밀번호: <input type="password" th:field="*{password}" /><br>
-  이메일: <input type="email" th:field="*{email}" /><br>
+  <div class="register-group">
+    <div class="input-row">
+      <label for="userName">아이디:</label>
+    <input type="text" id="userName" th:field="*{username}" placeholder="아이디"><!--user엔티티 속성과 매핑 set -->
+    </div>
+    <p class="error" th:if="${#fields.hasErrors('username')}"
+         th:errors="*{username}"></p>
+  </div>
+  <div class="register-group">
+    <div class="input-row">
+      <label for="password">비밀번호:</label>
+    <input type="password" id="password" th:field="*{password}" placeholder="비밀번호">
+    </div>
+    <p class="error" th:if="${#fields.hasErrors('password')}"
+         th:errors="*{password}"></p>
+  </div>
+  <div class="register-group">
+    <div class="input-row">
+      <label for="email">이메일:</label>
+    <input type="email" id="email" th:field="*{email}" placeholder="이메일"/>
+    </div>
+        <p class="error" th:if="${#fields.hasErrors('email')}"
+             th:errors="*{email}"></p>
+  </div>
   <button type="submit">회원가입</button>
 </form>
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+  <p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+</div>
+<script>
+  function createPetal() {
+    const petal = document.createElement("div");
+    petal.classList.add("petal");
+    const size = Math.random() * 8 + 6;
+    petal.style.width = `${size}px`;
+    petal.style.height = `${size}px`;
+    petal.style.left = Math.random() * 100 + "vw";
+    petal.style.animationDuration = Math.random() * 5 + 5 + "s";
+    petal.style.animationDelay = Math.random() * 3 + "s";
+    document.body.appendChild(petal);
+
+    setTimeout(() => petal.remove(), 10000);
+  }
+
+  setInterval(createPetal, 300);
+</script>
 </body>
 </html>

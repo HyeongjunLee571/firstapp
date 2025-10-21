@@ -1,16 +1,16 @@
 package zuun.studying.firstapp.service;
 
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import zuun.studying.firstapp.Dto.UserDto;
 import zuun.studying.firstapp.entity.User;
 import zuun.studying.firstapp.enums.UserRoleEnum;
-import zuun.studying.firstapp.exception.UserException;
+import zuun.studying.firstapp.exception.UserAlreadyExistsException;
 import zuun.studying.firstapp.passwordEncoder.CustomPasswordEncoder;
 import zuun.studying.firstapp.repository.UserRepository;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -19,15 +19,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final CustomPasswordEncoder passwordEncoder;
 
+    @Transactional
+    public void register(UserDto userDto){
 
-
-    public void register(User user){
-        if(userRepository.findByEmail(user.getEmail()).isPresent()){
-            throw new UserException();
+        if(userRepository.countByUsername(userDto.getUsername()) > 0) {
+            throw new UserAlreadyExistsException("이미 존재하는 유저입니다.");
         }
 
-        user.setUserRole(UserRoleEnum.USER);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        String role = UserRoleEnum.USER.name();
+
+        userRepository.insertUser(userDto.getUsername(),
+                passwordEncoder.encode(userDto.getPassword()),userDto.getEmail(),role,LocalDateTime.now());
+    }
+
+    public User getUser(String username){
+
+        return userRepository.findByUsername(username).
+                orElseThrow(()->new UserAlreadyExistsException("없는 사용자입니다."));
+
     }
 }
