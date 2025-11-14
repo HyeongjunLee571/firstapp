@@ -1,15 +1,13 @@
 package zuun.studying.firstapp.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import zuun.studying.firstapp.entity.Post;
-import zuun.studying.firstapp.entity.User;
-
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,44 +23,38 @@ public  interface PostRepository extends JpaRepository<Post,Long> {
                     @Param("title") String title,
                     @Param("content") String content,
                     @Param("username") String username);
-    //생성
-    @Modifying
-    @Query(value = "INSERT INTO posts(title,content,author,user_id,likes)"+
-            "VALUES (:title,:content,:author,:userId,0)",nativeQuery = true)
-    void insertPost(@Param("title") String title,
-                    @Param("content") String content,
-                    @Param("author") String author,
-                    @Param("userId") Long userId,
-                    @Param("likes") int likes);
+    //게시글 단일 조회(파일 포함) > 파일 없어도 조회 가능 단 유저는 반드시 존재해야함
+    @Query("SELECT p FROM Post p JOIN FETCH p.user LEFT JOIN fetch p.files WHERE  p.id = :id")
+    Optional<Post> findPostWithUserFiles(@Param("id") Long id);
 
-    @Modifying
+
+    @Modifying//좋아요 추가
     @Query("UPDATE Post p SET p.likes = :likes WHERE p.id = :id")
     //파라미터 넘길때 조건 값과 수정 값을 같이 선언해야함
     void updatePostLikes(@Param("id") Long id,@Param("likes")int likes);
 
-    //조회(Post 엔티티로 조회 조건은 postid 기준)
-    @Query("SELECT p FROM Post p WHERE  p.id = :id")
-    Optional<Post> viewPost(@Param("id") Long id);
+//    //게시글 존재 여부 확인용(단일 조회 파일 제외)
+//    @Query("SELECT p FROM Post p WHERE  p.id = :id")
+//    Optional<Post> viewPost(@Param("id") Long id);
 
-    //전체 조회(Post 엔티티로 전체 조회 작성자 포함하여서(작성자는 즉시 조회)
-//    @Query(value = "SELECT p from Post p join FETCH p.user ORDER BY p.id DESC ")
-//    List<Post> findAllPosts();
+    //페이징 된 게시글 전체목록 조회
+    // (Post 엔티티로 전체 조회 작성자 포함하여서(작성자는 즉시 조회) > 게시글 일부만 나와도 괜찮 > 파일 정보까지는 불필요
+    //ORDER BY 뒤에 오는것은 기준 > DESC 뒤에 조건 기준으로 내림차순 적용 createdAt는 생성시간 기준 id면 아이디 기준
+    //둘다 최신순으로 내림 차순 예시)1,2,3
+    @Query("SELECT p FROM Post p JOIN FETCH  p.user ORDER BY p.createdAt DESC")
+    Page<Post> findAllWithUser(Pageable pageable);
 
-    //전체 조회(Post 엔티티로 전체 조회 작성자 포함하여서(작성자는 즉시 조회)
-    @Query(value = "SELECT * from posts ORDER BY created_at desc limit :limit OFFSET :offset" ,nativeQuery = true)
-    List<Post> findAllPagePosts(@Param("limit") int limit,@Param("offset") int offset);
-
-    //전체 게시글 수
-    @Query(value = "SELECT count(*) FROM posts",nativeQuery = true)
-    int countAllPost();
-
-    String user(User user);
-
-    @Modifying
+    @Modifying//게시글 삭제용
     @Query(value = "DELETE FROM Post WHERE id=:id")
-    void deletePostById(@Param("id") Long id);
+    void DeletePostById(@Param("id") Long id);
 
-    @Modifying
+    @Modifying//댓글 삭제용
     @Query(value = "DELETE FROM Comment c WHERE c.post.id = :id")
-    void commentsdeleteById(@Param("id") Long id);
+    void CommentsDeleteById(@Param("id") Long id);
+
+    @Modifying//댓글 삭제용
+    @Query(value = "DELETE FROM FileEntity f WHERE f.post.id = :id")
+    void filesDeleteById(@Param("id") Long id);
+
+
 }

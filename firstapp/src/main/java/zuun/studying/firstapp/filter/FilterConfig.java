@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,10 +26,7 @@ import zuun.studying.firstapp.repository.UserRepository;
 @EnableMethodSecurity(securedEnabled = true)
 public class FilterConfig {
 
-    @Autowired
-    private UserRepository userRepository;
-    //스프링빈으로 자동 등록해야 속성으로 활용가능
-    //private final JwtFilter jwtFilter;
+    private final UserRepository userRepository;
 
     //스프링 시큐리티의 필터 체인 설정을 구성 > HttpSecurity을 기반으로 보안 규칙 지정
     @Bean
@@ -48,15 +46,21 @@ public class FilterConfig {
                 //경로별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         //누구나 접근 가능(JWT 활용 X/권한 활용 X)
-                        .requestMatchers("/users/register", "/users/login","/users/register/**",
-                                "/posts","/users/home","/users/**").permitAll()
+                        //조건: 아래 코드에 /users,/users/**하고 밑에서 또 /users/**하고 유저 권한 시 접근하도록 설정시 첫 코드만 적용
+                        .requestMatchers("/users/register", "/users/login",
+                                "/users/home","/uploads/**").permitAll()
                         //(JWT 토큰 활용 o/권한 활용 o)
                         // URL 예시 : api/user/getuser 접속시 > USER 권한 있는 사람만 접근 가능
                         .requestMatchers("/users/**").hasRole("USER")
+                        //게시글 GET으로 들어오는 요청이고 posts 및 posts뒤에 다른 URL이 와도 인증없이 허용
+                        .requestMatchers(HttpMethod.GET,"posts","posts/**").permitAll()
+                        //게시글 POST으로 들어오는 요청이고 posts 및 posts뒤에 다른 URL이 와도 인증 필요 없이는 접근X
+                        .requestMatchers(HttpMethod.POST,"posts","posts/**").hasRole("USER")
                         //그외 모든 URL 요청 인증된것만 접근 가능하도록 설정(JWT 토큰 활용 O/권한 제한 X/권한 활용 O)
                         .anyRequest().authenticated()
                 ).formLogin(form -> form
                         .loginPage("/users/login")//접속 시 나오는 주소
+                        //유저네임으로 인증 진행(아이디)
                         .usernameParameter("userName")
                         .loginProcessingUrl("/users/login")//포스트 요청시 엔드포인트 주소
                         .defaultSuccessUrl("/users/home",true)//200OK일때 주소처리
@@ -88,7 +92,4 @@ public class FilterConfig {
         builder.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
         return builder.build();
     }
-
-
-
 }

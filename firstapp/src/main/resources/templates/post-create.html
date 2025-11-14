@@ -73,19 +73,24 @@
         .button-group button:hover{
             background: #e3f2fd;
         }
-        .btn {
-            padding: 10px 20px;
-            background-color: #4a90e2; /* 기본 하늘색 */
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+        .form-container .error{
+            width: 100%;
+            color: red;
+            font-size: 1.0rem;
+            margin-top: 5px;
+            text-align: left;
+            margin-left: 0;
+            white-space: nowrap;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
         }
 
-        .btn:hover {
-            background-color: #357ABD; /* hover 시 진한 색 */
+        .form-group .error {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 5px;
         }
         .petal {
             position: fixed;
@@ -112,19 +117,33 @@
 <div class="form-container">
 <h1>게시글 작성</h1>
 
-<form th:action="@{/posts}" method="post" th:object="${post}">
+<form th:action="@{/posts}" method="post" th:object="${post}" enctype="multipart/form-data" id="postForm">
+    <div class="form-group">
     <label>제목</label>
-  <input type="text" th:field="*{title}" placeholder="게시글 제목을 입력하세요"><!--post엔티티 속성과 매핑 set이고 placeholder이친구 텍스트 박스 내부의 이름-->
+    <input type="text" th:field="*{title}" placeholder="게시글 제목을 입력하세요"><!--post엔티티 속성과 매핑 set이고 placeholder이친구 텍스트 박스 내부의 이름-->
+    <p class="error" th:if="${#fields.hasErrors('title')}"
+       th:errors="*{title}" style="color: red;"></p>
+    </div>
+
+    <div class="form-group">
     <label>내용</label>
     <textarea type="text" th:field="*{content}" placeholder="내용을 입력하세요" maxlength="2000"></textarea>
-  <input type="hidden" th:field="*{author}"><!--DTO랑 바인딩하는거여서 DTO에 바인딩하는 필드가 다 존재해야 정상 동작함 만약 바인딩 하는 필드중 하나라도 없으면 오류터짐 -->
-    <div class="button-group">
-        <form th:action="@{/posts}" method="get">
-            <button type="submit">게시글 목록</button>
-        </form>
-        <button type="submit">게시글 등록</button>
+    <!-- th:field는 DTO 동일한 이름을 가진 필드와 바인딩 즉 DTO 값 변경시 실시간으로 값이 반영됨 -->
+    <p class="error" th:if="${#fields.hasErrors('content')}"
+       th:errors="*{content}" style="color: red;"></p>
     </div>
-</form>
+
+    <label>파일 업로드</label>
+    <input type="file" name="files" multiple accept="image/*,video/*">
+
+    <p th:if="${customError}" th:text="${customError}" style="color: red;"></p>
+</form><!--폼 안에 버튼이 있다보니(목록/등록) 폼 제출로 인식해서 목록이 제대로 안 넘어감 > 폼이랑 별도로 선언으로 해결 -->
+    <div class="button-group">
+        <a th:href="@{/posts}"><!-- 자동 get 요청으로 보냄 -->
+            <button type="button">게시글 목록</button>
+        </a>
+        <button type="submit" form="postForm">게시글 등록</button><!-- form="postForm" > postForm이라는 아이디를 가지고있는 폼을 제출한다는 의미 -->
+    </div>
 </div>
 <script>
     function createPetal() {

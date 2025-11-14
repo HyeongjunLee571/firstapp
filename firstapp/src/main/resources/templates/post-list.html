@@ -109,6 +109,7 @@
             max-width: 700px;
         }
 
+        /* 게시글 버튼 영역 */
         .post-list button {
             background: #fff;
             color: #1976d2;
@@ -117,7 +118,7 @@
             border-radius: 8px;
             cursor: pointer;
         }
-
+        /* 게시글 버튼 영역 */
         .post-list button:hover {
             background: #e3f2fd;
         }
@@ -231,7 +232,49 @@
         .pagination .bth.disabled:hover {
             background: #0d47a1;
         }
+        .preview-popup{
+            display: none;
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 5px;
+            z-index: 100;
+            box-shadow: 0 0 8px rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .preview-popup img,
+        .preview-popup video{
+            width: 200px;
+            height: auto;
+            border-radius: 8px;
+        }
+        .button-group .delete-button{
+            background:#ff4d4d;
+            color:white;
+            border:none;
+            padding:8px 14px;
+            border-radius:6px;
+            cursor:pointer;
+        }/* div 내 div 클래스에 효과 적용시 위와 같이 선언 */
+        .button-group .delete-button:hover{
+            background: #ff4d4d;
+        }
+        .write-button{
+            background: #1976d2;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .write-button:hover{
+            background: #87cfff;
+        }
     </style>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"><!-- content="${_csrf.token}"> 이부분 th 빼면 값 바인딩X
+    Thymeleaf은 th 선언해야 정상동작함 -->
 </head>
 <body>
 
@@ -251,20 +294,33 @@
 <div class="container">
     <!-- 게시글 리스트 -->
     <div class="post-list">
-        <div th:each = "post:${posts}" class="post-card" >
-            제목 <h3><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a></h3>
-            작성자 <p th:text="${post.author}"></p>
+        <div th:each = "post:${posts}" class="post-card"
+        th:with="hasFile=${post.files != null and not #lists.isEmpty(post.files)},
+        filePath=${hasFile} ? ${post.files[0].filePath} : '/images/no-image.png',
+        fileType=${hasFile} ? ${post.files[0].fileType} : 'image'">
+
+            제목 <h3 th:data-filepath="${filePath}"
+                    th:data-filetype="${fileType}"
+                    onmouseover="showPreview(event,this.dataset.filepath,this.dataset.filetype)"
+                    onmouseout="hidePreview()"
+                    style="cursor:pointer;">
+            <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a></h3> <!--get 요청 -->
+            작성자 <p th:text="${post.user.username}"></p>
             내용 <p th:text="${post.content}"></p>
 
             <div class="button-group">
             <form th:action="@{/posts/new}" method="get">
                 <button type="submit">새 글 작성</button>
             </form>
-            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
-            <button type="submit">삭제</button>
-            </form>
+                <button type="button" th:onclick="|confirmDelete(${post.id})|" class="delete-button">삭제</button>
+                  <!-- onclick="confirmDelete([[${post.id}]])" 이렇게 했을때 동작 안 됨 변경 ->
+                  온 클릭 앞 th 추가 confirmDelete([[${post.id}]]) 이부분 > "|confirmDelete(${post.id})|" 으로 수정
+                  Thymeleaf 스크립트 방식이 안 먹혀서 문자열 방식으로 수정하여서 삭제 정상동작 됨 -->
             </div>
         </div>
+
+        <!--미리보기 팝업 -->
+        <div id="previewPopup" class="preview-popup"></div>
 
         <!-- 페이지네이션 -->
         <div class="pagination">
@@ -287,8 +343,74 @@
         <h4 th:text="${username}"></h4>
         <p th:text="${email}"></p>
         <p>백엔드 개발자</p>
+
+        <form th:action="@{/posts/new}" method="get">
+            <button type="submit" class="write-button">새 글 작성</button>
+        </form>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- AJAX DELETE 요청 방식 -->
+<script>
+
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content; //토큰 필수(없을 시 비동기 호출 동작 X)
+
+    function confirmDelete(postId) {
+        Swal.fire({
+            title: '정말 삭제하시겠습니까?',
+            text: "삭제한 게시글은 복구할 수 없습니다.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#87CEEB',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                fetch('/api/posts/' + postId + '/delete',
+                    {
+                        method: 'DELETE',/* 삭제가 진행이 안 되어서 타입이 선언되어있었는데 그부분 지움 */
+                        headers: {
+                            [csrfHeader]: csrfToken
+                        }
+                    }).then(res => res.json()) //서버로 받은 데이터 JS 객체로 변환 그 다음
+                    .then(date => { //<여기로 데이터 전송
+                        if (date.success) { //요청받은 데이터가 trun인경우 실행
+                            Swal.fire('삭제 완료', '게시글이 삭제되었습니다.', 'success')
+                                .then(() => window.location.reload());
+                        } else {//trun가 아닌 경우
+                            Swal.fire('삭제 실패', '게시글이 삭제를 실패하였습니다.', 'error');
+                        }
+                    }).catch(() => Swal.fire('삭제 실패', '게시글이 삭제를 실패하였습니다.', 'error'));
+            }
+        });
+    }
+</script>
+
+
+<script th:if="${successMessage}" th:inline="javascript">
+    window.Swal.fire({
+        icon: 'success',
+        title: '성공',
+        html: '<b>[[${successMessage}]]</b>',
+        confirmButtonColor: '#87CEEB',
+        showConfirmButton: false,
+        timer: 3000
+    });
+</script>
+
+<script th:if="${errorMessage != null and errorMessage != ''}" th:inline="javascript">
+    window.Swal.fire({
+        icon: 'error',
+        title: '에러',
+        html: '<b>[[${errorMessage}]]</b>',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: '확인'
+    });
+</script>
 
 <!-- 🌸 꽃잎 생성 스크립트 -->
 <script>
@@ -307,6 +429,29 @@
     }
 
     setInterval(createPetal, 300);
+
+
+    const popup = document.getElementById('previewPopup');
+
+    function showPreview(event, filePath,fileType){
+        if(!filePath) return;
+
+        let html = '';
+        if(fileType === 'image'){
+            html = `<img src="${filePath}" alt="preview">`;
+        } else if(fileType === 'video'){
+            html = `<video src="${filePath}" muted autoplay loop></video>`;
+        }
+
+        popup.innerHTML = html;
+        popup.style.display = 'block';
+        popup.style.left = (event.pageX + 15) + 'px';
+        popup.style.top = (event.pageY + 15) + 'px';
+    }
+
+    function hidePreview(){
+        popup.style.display = 'none';
+    }
 </script>
 </body>
 </html>

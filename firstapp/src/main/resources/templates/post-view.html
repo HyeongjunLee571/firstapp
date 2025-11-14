@@ -122,8 +122,18 @@
         }
 
         /* 수정/삭제 버튼 */
-        .edit-button, .delete-button {
-            background-color: #a8d8ff;
+        .edit-button{
+            background-color: #1976d2;
+            color:white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .delete-button{
+            background-color: #ff4d4d;
+            color:white;
             border: none;
             border-radius: 8px;
             padding: 5px 10px;
@@ -135,6 +145,11 @@
         }
         .delete-button:hover {
             background-color: #ff7b7b;
+        }
+        .post-actions{
+            display: flex;
+            justify-content: space-between;
+            width: 95px;
         }
 
         .petal {
@@ -156,70 +171,385 @@
                 opacity: 0.2;
             }
         }
+        .registration-button{
+            display: block;
+            margin-top: 5px;
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .registration-button:hover{
+            background: #e3f2fd;
+        }
+        .List-button{
+            background:#1976d2;
+            color:white;
+            border:none;
+            padding:8px 14px;
+            border-radius:6px;
+            cursor:pointer;
+        }
     </style>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
 </head>
 <body>
 <div class="post-container">
 <h1 th:text="${post.title}"></h1>
 <p th:text="${post.content}"></p>
-<p>작성자: <span th:text="${post.author}"></span></p>
-<div>좋아요: <span th:text="${post.likes}"></span>
-<form th:action="@{|/posts/${post.id}/like|}" method="post" style="display: inline;">
-    <button type="submit" class="like-button">❤</button>
-</form></div>
+    <div th:each="file : ${post.files}">
 
-<div th:if="${post.imagePath}">
-    <img th:src="${post.imagePath}" alt="이미지" style="width:300px">
-</div>
-<div th:if="${post.videoPath}">
-    <video controls width="400">
-        <source th:src="${post.videoPath}" alt="이미지" type="video/mp4">
-    </video>
+        <div th:if="${file.fileType == 'image'}">
+            <img th:src="@{${file.filePath}}" style="width: 400px; height: auto">
+        </div>
+
+        <div th:if="${file.fileType == 'video'}">
+            <video controls style="width: 500px;">
+                <source th:src="@{${file.filePath}}" type="video/mp4">
+            </video>
+        </div>
+
+    </div>
+<p>작성자: <span th:text="${post.user.username}"></span></p><!-- 유저 아아디 참고하기에 유저 네임이 바뀌면 바뀐대로 적용 됨-->
+<div>
+    <button type="button" class="like-button" th:onclick="'likePostAjax(' + ${post.id} +')'">❤</button> <span id="post-likes-count" th:text="${post.likes}"></span>
 </div>
 
 <div class="post-actions">
     <form th:action="@{/posts/{id}/edit(id=${post.id})}" method="get"><!-- (id=${post.id}) 포스트 아이디 대입 -->
-       <button type="submit">수정</button>
+        <!-- 게시글 수정시 URL로 아이디를 받는데 그게 가능한것이 요청 보낼때 id를 별도로 엔티티에 아이디로 대입하였기 때문에 가능 -->
+       <button type="submit" class="edit-button">수정</button>
     </form>
-    <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
-<button type="submit">삭제</button>
-    </form>
+    <button type="button" th:onclick="|confirmDelete(${post.id})|" class="delete-button">삭제</button>
 </div>
 
 <hr>
 
-
     <div class="comments">
         <h3>댓글</h3>
 <ul class="comments-list">
-    <li th:each="comment : ${comments}" class="comment-box">
+    <li th:each="comment : ${comments}" class="comment-box" id="comment-[[${comment.id}]]">
         <div class="comment-header">
-        <span th:text="${comment.writer}"></span> :
+        <span th:text="${comment.user.username}"></span> :
         </div>
         <div class="comment-content">
         <span th:text="${comment.content}"></span>
         </div>
 
         <div class="comment-actions">
-
-            <form  th:action="@{|/posts/${post.id}/comments/${comment.id}/like|}" method="post" style="display:inline;">
-                <button type="submit" class="like-button">❤ <span th:text="${comment.likes}">0</span></button>
-            </form>
+            <button class="like-button" th:attr="data-post-id=${post.id},data-comment-id=${comment.id}">
+                ❤ <span th:id="'c-like-' + ${comment.id}" class="like-count">[[${comment.likes}]]</span></button>
+            <button class="delete-button" th:onclick="'deleteCommentAjax(' + ${comment.id} +')'">삭제</button>
         </div>
     </li>
 </ul>
+        <form id="comment-form">
+    <label for="content"></label><!-- placeholder 내용은 박스 내 내용-->
+    <textarea id = "content" name="content" placeholder="댓글 내용" maxlength="2000"></textarea>
+    <button type="submit" class="registration-button" th:attr="data-post-id=${post.id}">등록</button>
+        </form>
 
-<form th:action="@{|/posts/${post.id}/comments|}" method="post" class="comment-form">
-    <label for="content">
-        <input type="text" id = "content" name="content" placeholder="댓글 내용">
-    </label><!-- placeholder 내용은 박스 내 내용-->
-    <button type="submit">등록</button>
-    <form th:action="@{/posts}" method="get">
-        <button type="submit">목록이동</button>
-    </form><!-- Get으로 요청 보내기-->
-</form>
+        <form th:action="@{/posts}" method="get">
+            <button type="submit" class="List-button">목록이동</button>
+        </form><!-- Get으로 요청 보내기-->
     </div>
  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script th:if="${successMessage}" th:inline="javascript">
+    window.Swal.fire({
+        icon: 'success',
+        title: '성공',
+        html: '<b>[[${successMessage}]]</b>',
+        confirmButtonColor: '#87CEEB',
+        showConfirmButton: false,
+        timer: 3000
+    });
+</script>
+<!-- AJAX DELETE 요청 방식 -->
+<script>
+
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+
+    //엔터로 등록 처리
+    const commentInput = document.getElementById('content');
+
+    document.getElementById('comment-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const postId = document.querySelector('.registration-button').dataset.postId;
+        addCommentAjax(postId);
+    });
+
+    commentInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const postId = document.querySelector('.registration-button').dataset.postId;
+            addCommentAjax(postId);
+        }
+    });
+
+
+// 댓글 생성
+    async function addCommentAjax(postId){
+
+        const content = commentInput.value.trim();
+        if(!content) return;
+
+        //낙관적 UI
+        const tempId = 'tmp-' + Date.now(); // 임시 아이디 생성
+        appendCommentToDom({id: tempId, author: '나', content: content, likes: 0, postId: postId}, true)//임시 댓글 내용 생성
+        commentInput.value = '';//입력창 초기화
+
+
+        try {
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    [csrfHeader]: csrfToken
+                },
+
+                body: JSON.stringify({content})
+            });
+
+            const body = await res.json(); // 서버로 받은 데이터 파싱
+            console.log(body);
+
+            if(res.ok){
+                const real = body.data;
+                replaceTempComment(tempId,real);
+            } else {
+                removeTempComment(tempId);
+                showErrorAndRedirect('댓글 등록 실패');
+            }
+        } catch (e){
+            removeTempComment(tempId);
+            showErrorAndRedirect('댓글 등록 실패');
+        }
+
+        function appendCommentToDom(commentObj, isTemp){
+
+            const list = document.querySelector('.comments-list') || document.getElementById('comments-list');
+            const li = document.createElement('li');
+            li.classList.add('comment-box');
+            li.id = 'comment-' + commentObj.id;
+            li.innerHTML = `
+                <div class = "comment-header"> ${commentObj.author} : </div>
+                <div class = "comment-content"><span>${escapeHtml(commentObj.content)}</span></div>
+                <div class="comment-actions">
+                <button class="like-button" data-post-id="${commentObj.postId}" data-comment-id="${commentObj.id}">❤ <span id="c-like-${commentObj.id}" class="like-count">${commentObj.likes}</span></button>
+                <button class="delete-button" onclick="deleteCommentAjax(${commentObj.id})">삭제</button>
+                </div>
+                 `;
+
+            if(isTemp) {
+                li.style.opacity = "0.7";
+                li.dataset.temp = "true";
+                li.dataset.tempLikes = commentObj.likes ?? 0;
+            }
+
+            list.append(li);
+
+            console.log("appendCommentToDom received postId =", commentObj.postId);
+        }
+
+        function  replaceTempComment(tempId, real){
+            const tempEI = document.getElementById('comment-' + tempId);
+            if(!tempEI) return
+
+            const tempLikes = parseInt(tempEI.dataset.tempLikes || "0");
+            real.likes = (real.likes || 0) + tempLikes;
+
+            tempEI.remove();
+            appendCommentToDom(real,false);
+        }
+
+        function removeTempComment(tempId){
+            const el = document.getElementById('comment-' + tempId);
+            if(el) el.remove();
+        }
+
+        function escapeHtml(unsafe){
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+
+        }
+
+    }
+
+    function handleTempLike(commentId) {
+        const el = document.getElementById('comment-' + commentId);
+        if(!el) return;
+
+        let count = parseInt(el.dataset.tempLikes || "0");
+        count++;
+        el.dataset.tempLikes = String(count);
+
+        const likeCountEl = el.querySelector('.like-count');
+        if(likeCountEl) likeCountEl.textContent = String(count);
+    }
+
+    //th:attr="data-post-id=${post.id}" 이런식으로 data로 선언된 아이디 함수에 대입하는 방법
+    document.querySelector('.comments-list').addEventListener('click',function (e) {
+        const btn = e.target.closest('.like-button')
+        if(!btn) return;
+
+        console.log('버튼 클릭 감지됨!');
+        const postId = btn.dataset.postId;
+        const commentId = btn.dataset.commentId;
+        console.log('postId', btn.dataset.postId, 'commentId', btn.dataset.commentId); /*JS 로그 찍는 방법 */
+
+        likeCommentAjax(postId,commentId);
+    });
+
+
+    //댓글 삭제
+    async function deleteCommentAjax(commentId){
+
+        Swal.fire({
+            title: '댓글 삭제',
+            text: "이 댓글을 삭제하시겠습니까?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#87CEEB',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if(result.isConfirmed){
+
+                 const el = document.getElementById('comment-' + commentId);
+                 if(el) el.remove();
+
+
+                fetch('/api/posts/comments/' + commentId + '/delete',
+                    {
+                        method: 'DELETE',/* 삭제가 진행이 안 되어서 타입이 선언되어있었는데 그부분 지움 */
+                        headers: {
+                            [csrfHeader]:csrfToken
+                        }
+                    }).then((res) => {
+                    if(res.ok) {
+                        location.reload();
+                    }else{
+                        showErrorAndRedirect('댓글 등록 실패');
+                    }
+                }).catch(() => {
+                    showErrorAndRedirect('댓글 등록 실패');
+                });
+
+            }
+        });
+    }
+
+    //게시글 삭제
+    function confirmDelete(postId) {
+        Swal.fire({
+            title: '정말 삭제하시겠습니까?',
+            text: "삭제한 게시글은 복구할 수 없습니다.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#87CEEB',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                fetch('/api/posts/' + postId + '/delete',
+                    {
+                        method: 'DELETE',/* 삭제가 진행이 안 되어서 타입이 선언되어있었는데 그부분 지움 */
+                        headers: {
+                            [csrfHeader]: csrfToken
+                        }
+                    }).then(res => res.json()) //서버로 받은 데이터 JS 객체로 변환 그 다음
+                    .then(date => { //<여기로 데이터 전송
+                        if (date.success) { //요청받은 데이터가 trun인경우 실행
+                            Swal.fire('삭제 완료', '게시글이 삭제되었습니다.', 'success')
+                            .then(() => window.location.href = '/posts');
+                        } else {//trun가 아닌 경우
+                            Swal.fire('삭제 실패', '게시글이 삭제를 실패하였습니다.', 'error');
+                        }
+                    }).catch(() => Swal.fire('삭제 실패', '게시글이 삭제를 실패하였습니다.', 'error'));
+            }
+        });
+    }
+
+    //게시글 좋아요
+    async function likePostAjax(postId){
+
+        const likesEl = document.querySelector(`#post-likes-count`);
+        if(!likesEl) return;
+
+        const before = parseInt(likesEl.textContent || '0');
+        likesEl.textContent = before + 1;
+
+        const res = await fetch(`/api/posts/${postId}/like`,{
+                method: 'POST',
+                headers: {[csrfHeader]: csrfToken}
+        });
+
+        if(!res.ok){
+            likesEl.textContent = before;
+            showError('좋아요 등록 실패');
+        }
+
+    }
+
+    //댓글 좋아요
+    async function likeCommentAjax(postId,commentId){
+
+        const likesEl = document.querySelector('#c-like-' + commentId);
+        if(!likesEl) return;
+
+        if(likesEl.closest('li').dataset.temp === "true") return;
+
+        const before = parseInt(likesEl.textContent || '0');
+        likesEl.textContent = String(before + 1);
+
+        const res = await fetch(`/api/posts/${postId}/comments/${commentId}/like`,{
+            method: 'POST',
+            headers: {[csrfHeader]: csrfToken}
+        });
+
+        if(!res.ok){
+            likesEl.textContent = before;
+            showError('좋아요 등록 실패');
+        }
+
+    }
+
+    function showErrorAndRedirect(message){
+
+        Swal.fire({
+            title: '정말 삭제하시겠습니까?',
+            text: message,
+            icon: 'error',
+            confirmButtonText: '확인'
+
+        }).then(() => {
+            window.location.href = '/posts';
+        });
+    }
+
+    function showError(message){
+        Swal.fire({
+            icon: 'error',
+            title: '에러',
+            text: message,
+            confirmButtonText: '확인'
+        });
+    }
+</script>
 
 <script>
     function createPetal() {

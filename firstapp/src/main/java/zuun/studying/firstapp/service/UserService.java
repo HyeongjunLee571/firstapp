@@ -4,9 +4,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zuun.studying.firstapp.Dto.UserDto;
+import zuun.studying.firstapp.entity.BaseEntity;
 import zuun.studying.firstapp.entity.User;
 import zuun.studying.firstapp.enums.UserRoleEnum;
 import zuun.studying.firstapp.exception.UserAlreadyExistsException;
+import zuun.studying.firstapp.exception.UserNotFoundException;
 import zuun.studying.firstapp.passwordEncoder.CustomPasswordEncoder;
 import zuun.studying.firstapp.repository.UserRepository;
 
@@ -29,13 +31,13 @@ public class UserService {
         String role = UserRoleEnum.USER.name();
 
         userRepository.insertUser(userDto.getUsername(),
-                passwordEncoder.encode(userDto.getPassword()),userDto.getEmail(),role,LocalDateTime.now());
+                passwordEncoder.encode(userDto.getPassword()),userDto.getEmail(),role);
     }
 
     public User getUser(String username){
 
         return userRepository.findByUsername(username).
-                orElseThrow(()->new UserAlreadyExistsException("없는 사용자입니다."));
+                orElseThrow(()->new UserNotFoundException("없는 사용자입니다."));
 
     }
 }

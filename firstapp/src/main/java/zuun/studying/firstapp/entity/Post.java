@@ -4,12 +4,14 @@ package zuun.studying.firstapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "posts")
+@AllArgsConstructor
 @NoArgsConstructor
 public class Post extends BaseEntity {
 
@@ -25,16 +27,11 @@ public class Post extends BaseEntity {
 
     private int likes = 0;
 
-    private String author;
-
-    @Column(name = "image_path")
-    private String imagePath;
-
-    @Column(name = "video_path")
-    private String videoPath;
-
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<FileEntity> files = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

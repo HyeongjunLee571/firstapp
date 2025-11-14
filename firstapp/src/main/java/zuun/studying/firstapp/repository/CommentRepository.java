@@ -16,13 +16,13 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     //List<Comment> findByPostId(Long postId);
 
-    @Modifying
-    @Query(value = "INSERT INTO comments(content,writer,post_id,likes)"+
-            "VALUES (:content,:writer,:postId,0)",nativeQuery = true)
-    void createComment(@Param("content") String content,
-                    @Param("writer") String writer,
-                    @Param("postId") Long postId,
-                    @Param("likes") int likes);
+//    @Modifying
+//    @Query(value = "INSERT INTO comments(content,user_id,post_id,likes)"+
+//            "VALUES (:content,:userId,:postId,0)",nativeQuery = true)
+//    void createComment(@Param("content") String content,
+//                    @Param("userId") Long userId,
+//                    @Param("postId") Long postId,
+//                    @Param("likes") int likes);
 
     @Query("SELECT c FROM Comment c WHERE  c.id = :id")
     Optional<Comment> viewComment(@Param("id") Long id);

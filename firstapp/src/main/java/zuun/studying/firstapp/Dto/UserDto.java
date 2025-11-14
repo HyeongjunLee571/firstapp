@@ -20,7 +20,7 @@ public class UserDto {
     private String username;
 
     @NotBlank(message = "이메일은 필수 입력값 입니다.")
-    @Email(message = "올바은 이메일 형식을 입력해주세요.")
+    @Email(message = "올바른 이메일 형식을 입력해주세요.")
     private String email;
 
     @NotBlank(message = "비밀번호는 필수 입력값입니다.")

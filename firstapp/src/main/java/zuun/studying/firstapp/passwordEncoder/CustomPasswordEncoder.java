@@ -12,7 +12,7 @@ public class CustomPasswordEncoder implements PasswordEncoder {
     @Override
     //비밀번호 암호화하여 생성하는 메서드
     public String encode(CharSequence rawPassword) {
-        return BCrypt.withDefaults().hashToString(BCrypt.MIN_COST, rawPassword.toString().toCharArray());
+        return BCrypt.withDefaults().hashToString(10, rawPassword.toString().toCharArray());
     }
 
     @Override

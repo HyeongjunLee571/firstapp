@@ -19,13 +19,14 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private String writer;
-
     private int likes = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
  }

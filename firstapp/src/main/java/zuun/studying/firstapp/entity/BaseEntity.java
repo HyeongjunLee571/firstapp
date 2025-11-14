@@ -20,12 +20,8 @@ public class BaseEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
-
     @LastModifiedDate
+    @Column(name = "modifier_at")
     private LocalDateTime modifiedAt;
 
 }
