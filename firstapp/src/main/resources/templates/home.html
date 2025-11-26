@@ -89,7 +89,6 @@
     <button th:onclick="'location.href=\'' + @{/users/login} + '\''">로그인</button>
 <button th:onclick="'location.href=\'' + @{/users/logout} + '\''">로그아웃</button>
 </footer>
-<p th:if="${message}" th:text="${message}" style="color: black;"></p> <!-- application에 create는 컴파일때마다 테이블 생성 후 값 대입-->
 
 <script>
     function createPetal() {

@@ -5,7 +5,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component//불필요 메서드
 public class CustomPasswordEncoder implements PasswordEncoder {
 
 

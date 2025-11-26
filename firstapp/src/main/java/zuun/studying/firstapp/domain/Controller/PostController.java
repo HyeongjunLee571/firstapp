@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,8 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import zuun.studying.firstapp.Dto.ApiResponse;
-import zuun.studying.firstapp.Dto.PostDto;
+import zuun.studying.firstapp.Dto.*;
 import zuun.studying.firstapp.entity.Comment;
 import zuun.studying.firstapp.entity.Post;
 import zuun.studying.firstapp.entity.User;
@@ -65,9 +65,9 @@ public class PostController {
     //게시글 수정
     @GetMapping("/{id}/edit")
     public String editPostFrom(@PathVariable Long id,Model model){//매개변수 아이디는 URL에서 받은 아이디
-        Post post = postService.findById(id);
+        PostDetailDto post = postService.findById(id);
 
-        PostDto postDto = new PostDto();
+        PostDto postDto = PostMapper.toDto(post);
         postDto.setId(post.getId());//조회된 게시글에서 받은 아이디
         postDto.setTitle(post.getTitle());
         postDto.setContent(post.getContent());
@@ -106,9 +106,9 @@ public class PostController {
                            @AuthenticationPrincipal UserDetails userDetails,
                            @ModelAttribute("errorMessage")String errorMessage){
 
-        Page<Post> postsPage = postService.getPagePosts(page);
+        Page<PostDto> postsPage = postService.getPagePosts(page);
 
-        User user = userService.getUser(userDetails.getUsername());
+        UserResponseDto user = userService.getUser(userDetails.getUsername());
 
         model.addAttribute("posts",postsPage);
         model.addAttribute("username",user.getUsername());
@@ -124,13 +124,23 @@ public class PostController {
     @GetMapping("/{id}")
     public String viewPost(@PathVariable Long id, Model model){
 
-        Post post = postService.findById(id);
-        List<Comment> comments = commentService.getComments(id);
+        PostDetailDto post = postService.findById(id);
+        List<CommentResponseDto> comments = commentService.getComments(id);
 
         model.addAttribute("post",post);
         model.addAttribute("comments",comments);
         return "post-view";
 
+    }
+
+    public static class PostMapper{
+        public static PostDto toDto(PostDetailDto post){
+            PostDto dto = new PostDto();
+            dto.setId(post.getId());
+            dto.setTitle(post.getTitle());
+            dto.setContent(post.getContent());
+            return dto;
+        }
     }
 
 }

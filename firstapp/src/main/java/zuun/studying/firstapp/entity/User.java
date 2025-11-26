@@ -11,7 +11,7 @@ import zuun.studying.firstapp.enums.UserRoleEnum;
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-public class User extends BaseEntity {
+public class  User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +24,6 @@ public class User extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String email;
-
-    private String profileImage;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)

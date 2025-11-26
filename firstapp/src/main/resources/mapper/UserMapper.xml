@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zuun.studying.firstapp.mapper.UserMapper">
+    <!-- 유저 조회 -->
+    <select id="findByUsername" parameterType="string" resultType="zuun.studying.firstapp.Dto.UserResponseDto">
+        SELECT id,username,password,email,userRole,created_at
+        FROM users
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+    <!--username 중복 개수 조회 -->
+    <select id="countByUsername" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE username = #{username}
+    </select>
+
+    <!--User 생성 -->
+    <insert id="insertUser" parameterType="zuun.studying.firstapp.entity.User">
+        INSERT INTO users (username,password,email,userRole,created_at)
+        VALUES (#{username},#{password},#{email},#{userRole},Now())
+    </insert>
+</mapper>

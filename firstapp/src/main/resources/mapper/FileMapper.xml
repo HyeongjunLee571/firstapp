@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zuun.studying.firstapp.mapper.FileMapper">
+
+    <insert id="insertFile" parameterType="zuun.studying.firstapp.entity.FileEntity">
+        INSERT INTO files (original_name, stored_name, file_path, file_type,post_id)
+        VALUES (#{originalName},#{storedName},#{filePath},#{fileType},#{postId})
+    </insert>
+
+    <select id="findFilesByPostId" parameterType="long" resultType="zuun.studying.firstapp.Dto.FileDto">
+        SELECT id,post_id AS postId,original_name AS originalName, stored_name AS storedName, file_path AS filePath,file_type AS fileType  created_at
+        FROM files
+        WHERE post_id = #{postId}
+    </select>
+
+    <delete id="deleteFilesByPostId" parameterType="long">
+        DELETE FROM files
+        WHERE post_id = #{postId}
+    </delete>
+
+</mapper>

@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import zuun.studying.firstapp.Dto.CommentRequestDto;
+import zuun.studying.firstapp.Dto.CommentResponseDto;
 import zuun.studying.firstapp.entity.Comment;
-import zuun.studying.firstapp.entity.FileEntity;
 import zuun.studying.firstapp.entity.Post;
 import zuun.studying.firstapp.entity.User;
 import zuun.studying.firstapp.exception.CommentNotFoundException;
 import zuun.studying.firstapp.exception.PostNotFoundException;
 import zuun.studying.firstapp.exception.UserNotFoundException;
-import zuun.studying.firstapp.repository.CommentRepository;
+import zuun.studying.firstapp.mapper.CommentMapper;
 import zuun.studying.firstapp.repository.PostRepository;
 import zuun.studying.firstapp.repository.UserRepository;
 
@@ -24,8 +24,8 @@ import java.util.List;
 @Slf4j
 public class CommentService {
 
+    private final CommentMapper commentMapper;
     private final UserRepository userRepository;
-    private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
     @Transactional
@@ -39,37 +39,38 @@ public class CommentService {
 
         Comment comment = new Comment();
         comment.setContent(commentDto.getContent());
-        comment.setUser(user);
-        comment.setPost(post);
+        comment.setUserId(user.getId());
+        comment.setPostId(post.getId());
         comment.setLikes(0);
 
-        Comment saveComment = commentRepository.save(comment);
+        commentMapper.insertComment(comment);
 
-        return saveComment;
-
+        return comment;
 
     }
 
-    public List<Comment> getComments(Long postId) {
+    public List<CommentResponseDto> getComments(Long postId) {
 
-        return commentRepository.findByPostId(postId);
+        return commentMapper.findByPostId(postId);
 
     }
 
     @Transactional
     public void addLike(Long postId,Long commentId) {
 
-        Comment comment = commentRepository.viewComment(commentId).orElseThrow(()->
-                new CommentNotFoundException("존재하지 않는 댓글입니다.", postId));
+        CommentResponseDto comment = commentMapper.viewComment(commentId);
 
-        int commentLike = comment.getLikes()+1;
-        commentRepository.updateCommentLikes(comment.getId(),commentLike);
+        if(comment == null){
+            throw  new CommentNotFoundException("존재하지 않는 댓글입니다.",postId);
+        }
+
+        commentMapper.updateCommentLikes(comment.getId());
     }
 
 
     @Transactional
     public void deleteComment(Long id){
-        commentRepository.deleteById(id);
+        commentMapper.deleteCommentByPostId(id);
     }
 
 }

@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import zuun.studying.firstapp.passwordEncoder.CustomPasswordEncoder;
@@ -76,8 +77,9 @@ public class FilterConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new CustomPasswordEncoder();
+    public BCryptPasswordEncoder passwordEncoder(){
+        //return new CustomPasswordEncoder();//커스텀 툴
+        return new BCryptPasswordEncoder();//인텔리제이에서 제공하는 패스워드 암호화 툴
     }
 
     @Bean

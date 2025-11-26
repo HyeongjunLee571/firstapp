@@ -233,7 +233,7 @@
 <ul class="comments-list">
     <li th:each="comment : ${comments}" class="comment-box" id="comment-[[${comment.id}]]">
         <div class="comment-header">
-        <span th:text="${comment.user.username}"></span> :
+        <span th:text="${comment.author}"></span> :
         </div>
         <div class="comment-content">
         <span th:text="${comment.content}"></span>
