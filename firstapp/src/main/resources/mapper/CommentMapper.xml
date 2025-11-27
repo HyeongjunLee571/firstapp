@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="zuun.studying.firstapp.mapper.CommentMapper">
+    <resultMap id="CommentResultMap" type="zuun.studying.firstapp.Dto.CommentResponseDto">
+        <id property="id" column="id"/>
+        <result property="author" column="username"/>
+        <result property="content" column="content"/>
+        <result property="likes" column="likes"/>
+        <result property="postId" column="post_id"/>
+    </resultMap>
+
+
+    <insert id="insertComment" parameterType="zuun.studying.firstapp.entity.Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comments(content, user_id,post_id,likes,created_at)
+        VALUES(#{content},#{userId}, #{postId},0,NOW())
+    </insert>
+
+    <select id="viewComment" parameterType="java.lang.Long" resultMap="CommentResultMap">
+        SELECT c.id, c.content, c.likes, c.post_id, u.username
+        FROM comments c
+                 JOIN users u ON c.user_id = u.id
+        WHERE c.id = #{id}
+            LIMIT 1
+    </select>
+
+    <select id="findByPostId" parameterType="java.lang.Long" resultMap="CommentResultMap">
+        SELECT c.id,
+               c.content,
+               c.likes,
+               c.post_id,
+               u.username
+        FROM comments c
+                 JOIN users u ON c.user_id = u.id
+        WHERE c.post_id = #{id}
+        ORDER BY c.created_at ASC
+    </select>
+
+    <delete id="deleteCommentByPostId" parameterType="long">
+        DELETE FROM comments WHERE Post_id = #{id}
+    </delete>
+
+    <update id="updateCommentLikes" parameterType="long">
+        UPDATE comments
+        SET likes = likes + 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="zuun.studying.firstapp.mapper.PostMapper">
+
+    <resultMap id="PostResultMap" type="zuun.studying.firstapp.Dto.PostDto">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="username" column="username"/>
+    </resultMap>
+
+    <resultMap id="PostWithUserFilesMap" type="zuun.studying.firstapp.Dto.PostDetailDto">
+        <id property="id" column="p_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="likes" column="likes"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updateAt" column="update_at"/>
+
+        <association property="user" javaType="zuun.studying.firstapp.Dto.UserResponseDto">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="email" column="email"/>
+        </association>
+
+        <collection property="files" ofType="zuun.studying.firstapp.Dto.FileDto">
+            <id property="id" column="f_id"/>
+            <result property="originalName" column="original_name"/>
+            <result property="filePath" column="filePath"/>
+            <result property="createdAt" column="created_at"/>
+        </collection>
+    </resultMap>
+
+    <select id="findPostWithUserFiles" parameterType="long" resultMap="PostWithUserFilesMap">
+        SELECT p.id AS p_id, p.title AS title, p.content AS content, p.likes AS likes, p.created_at AS created_at,p.updated_at AS updated_at,
+               u.id AS id, u.username AS username,
+               u.email AS email,f.id AS f_id,f.originalName AS original_name,f.filePath As filePath,f.created_at AS created_at
+        FROM posts p
+                 JOIN users u ON p.user_id = u.id
+                 LEFT JOIN files f ON p.id = f.post_id
+        WHERE p.id = #{id}
+    </select>
+
+    <select id="selectAllPosts" parameterType="map" resultMap="PostResultMap">
+        SELECT p.id, p.title, p.content,u.username
+        FROM posts p
+                 JOIN users u ON p.user_id = u.id
+        ORDER BY p.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="insertPost" parameterType="zuun.studying.firstapp.entity.Post">
+        INSERT INTO posts(title, content, user_id, likes,created_at)
+        VALUES(#{title},#{content},#{userId},0,NOW())
+    </insert>
+
+    <update id="updatePost" parameterType="zuun.studying.firstapp.entity.Post">
+        UPDATE posts
+        SET title=#{title}, content=#{content}
+        WHERE id=#{id}
+    </update>
+
+    <update id="updatePostLikes" parameterType="long">
+        UPDATE posts
+        SET likes = likes + 1
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deletePost" parameterType="long">
+        DELETE FROM posts WHERE id = #{id}
+    </delete>
+
+</mapper>

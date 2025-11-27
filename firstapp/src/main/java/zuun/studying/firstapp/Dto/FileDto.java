@@ -1,19 +1,21 @@
 package zuun.studying.firstapp.Dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostDto {
+public class FileDto {
 
     private Long id;
-    private String title;
-    private String content;
+    private String originalName;
+    private String filePath;
+    private LocalDateTime createdAt;
 }

@@ -25,7 +25,7 @@ public class GlobalExcptionHandler{
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public String handleUserNotFound(AccessDeniedException ex, Model model){
+    public String handleUserNotFound(UserNotFoundException ex, Model model){
         model.addAttribute("errorMessage",ex.getMessage());
         model.addAttribute("user",new UserDto());
         return "register";

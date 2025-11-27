@@ -1,4 +1,4 @@
-package zuun.studying.firstapp.domain.Controller;
+package zuun.studying.firstapp.domain.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import zuun.studying.firstapp.Dto.UserDto;
-import zuun.studying.firstapp.exception.ValidationFailedException;
 import zuun.studying.firstapp.service.UserService;
 
 @RequiredArgsConstructor

@@ -21,12 +21,7 @@ public class Comment extends BaseEntity {
 
     private int likes = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    private Long postId;
+    private Long userId;
 
  }

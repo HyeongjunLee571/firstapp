@@ -21,8 +21,6 @@ public class FileEntity {
     private String filePath; //실제 경로
     private String fileType; //파일 속성
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
+    private Long postId;
 
 }
