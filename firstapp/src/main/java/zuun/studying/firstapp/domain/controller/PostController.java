@@ -43,7 +43,7 @@ public class PostController {
 
     //게시글 생성
     @PostMapping
-    public String createPost(@Valid @ModelAttribute("post") PostDto postDto,
+    public String createPost(@Valid @ModelAttribute("post") PostCreateDto postDto,
                              BindingResult bindingResult,Model model,
                              RedirectAttributes redirectAttributes,
                              @AuthenticationPrincipal UserDetails userDetails,
@@ -107,8 +107,9 @@ public class PostController {
         Page<PostDto> postsPage = postService.getPagePosts(page);
 
         UserResponseDto user = userService.getUser(userDetails.getUsername());
+        System.out.println(userDetails.getUsername());
 
-        model.addAttribute("posts",postsPage);
+        model.addAttribute("posts",postsPage.getContent());
         model.addAttribute("username",user.getUsername());
         model.addAttribute("email",user.getEmail());
         model.addAttribute("totalPages",postsPage.getTotalPages());
@@ -124,6 +125,7 @@ public class PostController {
 
         PostDetailDto post = postService.findById(id);
         List<CommentResponseDto> comments = commentService.getComments(id);
+        System.out.println(post.getFiles());
 
         model.addAttribute("post",post);
         model.addAttribute("comments",comments);

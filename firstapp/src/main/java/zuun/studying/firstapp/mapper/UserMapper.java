@@ -14,5 +14,7 @@ public interface UserMapper {
 
     void insertUser(User user);
 
+    User findEntityByUsername(String username);
+
 
 }

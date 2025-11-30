@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface CommentMapper {
 
-    Comment insertComment(Comment comment);
+    void insertComment(Comment comment);
 
     CommentResponseDto viewComment(@Param("id") Long id);
 
@@ -19,5 +19,7 @@ public interface CommentMapper {
     void updateCommentLikes(@Param("id") Long id);
 
     void deleteCommentByPostId(@Param("id") Long id);
+
+    void deleteCommentById(@Param("id") Long id);
 
 }

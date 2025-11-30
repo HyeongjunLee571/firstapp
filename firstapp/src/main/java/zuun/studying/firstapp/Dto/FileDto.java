@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 public class FileDto {
 
     private Long id;
-    private String originalName;
+    //private String originalName;//(실제 파일명)
+    private String storedName;//(UUID로 변환된 파일명)
     private String filePath;
-    private LocalDateTime createdAt;
+    private String fileType;
+    private Long postId;
 }

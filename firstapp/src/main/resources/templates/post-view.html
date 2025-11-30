@@ -203,12 +203,12 @@
     <div th:each="file : ${post.files}">
 
         <div th:if="${file.fileType == 'image'}">
-            <img th:src="@{${file.filePath}}" style="width: 400px; height: auto">
+            <img th:src="${file.filePath}" style="width: 400px; height: auto">
         </div>
 
         <div th:if="${file.fileType == 'video'}">
             <video controls style="width: 500px;">
-                <source th:src="@{${file.filePath}}" type="video/mp4">
+                <source th:src="${file.filePath}" type="video/mp4">
             </video>
         </div>
 
@@ -233,7 +233,7 @@
 <ul class="comments-list">
     <li th:each="comment : ${comments}" class="comment-box" id="comment-[[${comment.id}]]">
         <div class="comment-header">
-        <span th:text="${comment.user.username}"></span> :
+        <span th:text="${comment.author}"></span> :
         </div>
         <div class="comment-content">
         <span th:text="${comment.content}"></span>

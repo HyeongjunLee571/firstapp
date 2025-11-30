@@ -5,21 +5,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import zuun.studying.firstapp.Dto.PostCreateDto;
-import zuun.studying.firstapp.Dto.PostDetailDto;
-import zuun.studying.firstapp.Dto.PostDto;
+import zuun.studying.firstapp.Dto.*;
 import zuun.studying.firstapp.entity.FileEntity;
 import zuun.studying.firstapp.entity.Post;
-import zuun.studying.firstapp.entity.User;
 import zuun.studying.firstapp.exception.PostNotFoundException;
 import zuun.studying.firstapp.exception.UserNotFoundException;
 import zuun.studying.firstapp.mapper.CommentMapper;
 import zuun.studying.firstapp.mapper.FileMapper;
 import zuun.studying.firstapp.mapper.PostMapper;
+import zuun.studying.firstapp.mapper.UserMapper;
 import zuun.studying.firstapp.repository.FileRepository;
 import zuun.studying.firstapp.repository.UserRepository;
 
@@ -36,12 +35,12 @@ import java.util.UUID;
 @Slf4j
 public class PostService {
 
-    //private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final PostMapper postMapper;
     private final FileMapper fileMapper;
     private final CommentMapper commentMapper;
+    private final UserMapper userMapper;
 
     @Value("${custom.page-size}")
     private int PageSize;
@@ -49,10 +48,12 @@ public class PostService {
     private String uploadDir;
 
     @Transactional
-    public void save(PostDto postDto, String author, List<MultipartFile> files) throws IOException {
+    public void save(PostCreateDto postDto, String author, List<MultipartFile> files) throws IOException {
 
-        User user = userRepository.findByUsername(author).
-                orElseThrow(()->new UserNotFoundException("없는 사용자입니다."));
+        UserResponseDto user = userMapper.findByUsername(author);
+        if(user == null){
+            throw new UserNotFoundException("존재하지 않는 유저정보입니다.");
+        }
 
         Post post = new Post();
         post.setTitle(postDto.getTitle());
@@ -60,6 +61,7 @@ public class PostService {
         post.setUserId(user.getId());
 
         postMapper.insertPost(post);
+        System.out.println(post.getId());
 
         Files.createDirectories(Paths.get(uploadDir));
 
@@ -86,7 +88,7 @@ public class PostService {
             fileEntity.setFileType(fileType);
             fileEntity.setPostId(post.getId());
 
-            fileRepository.save(fileEntity); // 엔티티에 반영해도 꼭 세이브를 통해 저장해야 데이터베이스에 수정정보가 저장 됨
+            fileMapper.insertFile(fileEntity); // 엔티티에 반영해도 꼭 세이브를 통해 저장해야 데이터베이스에 수정정보가 저장 됨
             //세이브 안 할 시 엔티티에만 값 들어가고 데이터베이스는 실제 적용 X
 
         }
@@ -122,9 +124,10 @@ public class PostService {
             throw new PostNotFoundException("존재하지 않는 파일정보입니다.");
         }
 
-        User user = userRepository.findByUsername(author).
-                orElseThrow(()->new UserNotFoundException("없는 사용자입니다."));
-
+        UserResponseDto user = userMapper.findByUsername(author);
+        if(user == null){
+            throw new UserNotFoundException("존재하지 않는 유저정보입니다.");
+        }
 
         if(!postDetailDto.getUser().getUsername().equals(user.getUsername())) {
             throw new AccessDeniedException("수정할 권한이 없습니다.");
@@ -141,28 +144,27 @@ public class PostService {
         postMapper.updatePost(postDtos);
 
 
-        List<FileEntity> fileEntities = fileRepository.findByPostId(id);
+        List<FileDto> fileEntities = fileMapper.findFilesByPostId(id);
 
         if(files == null || files.isEmpty() || files.get(0).isEmpty()){
             return;
         }
 
-        for(FileEntity fileEntity : fileEntities) {
+        for(FileDto fileEntity : fileEntities) {
                 //기존 파일 물리적으로 삭제 및 DB 삭제
                 deleteFile(fileEntity);
                 fileMapper.deleteFilesByPostId(id);
         }
 
         //새 파일 업로드
-        String uploadDir = "C:/myapp/uploads/";
         Files.createDirectories(Paths.get(uploadDir));
 
         for(MultipartFile file : files){
 
             String originalName = file.getOriginalFilename();
             String storeName = UUID.randomUUID() + "_" + originalName;
-            Path path = Paths.get(uploadDir,storeName);
-            file.transferTo(path.toFile());
+            Path filepath = Paths.get(uploadDir,storeName);
+            file.transferTo(filepath.toFile());
 
             String contentType = file.getContentType();
             String fileType = (contentType != null && contentType.startsWith("video")) ? "video" : "image";
@@ -174,21 +176,28 @@ public class PostService {
             newfileEntity.setFileType(fileType);
             newfileEntity.setPostId(postDtos.getId());
 
-            fileRepository.save(newfileEntity);
+            fileMapper.insertFile(newfileEntity);
 
         }
     }
 
     public Page<PostDto> getPagePosts(int page){
-        Pageable pageable = PageRequest.of(page - 1,PageSize);//N페이지 가져와 > 한 페이지당 표시 데이터 N개 적용
-        return postMapper.selectAllPosts(pageable);
+        Pageable pageable = PageRequest.of(page - 1,PageSize);//N페이지 가져와 > 한 페이지당 표시 데이터 N개 적용 //jpa전용
+
+        Long offset = pageable.getOffset();
+        int limit = pageable.getPageSize();
+
+
+        List <PostDto> postDtos = postMapper.selectAllPosts(limit,offset);
+        Page<PostDto> postsPage = new PageImpl<>(postDtos,pageable,postMapper.countAllPosts());
+        return postsPage;
     }
 
     @Transactional
     public void deletePost(Long id){
 
-        List<FileEntity> fileEntities = fileRepository.findByPostId(id);
-        for(FileEntity fileEntity : fileEntities){
+        List<FileDto> fileEntities = fileMapper.findFilesByPostId(id);
+        for(FileDto fileEntity : fileEntities){
             deleteFile(fileEntity);
         }
         fileMapper.deleteFilesByPostId(id);
@@ -196,9 +205,10 @@ public class PostService {
         postMapper.deletePost(id);
     }
 
-    public void deleteFile(FileEntity fileEntity){
+    public void deleteFile(FileDto fileEntity){
 
-        Path filePath = Paths.get(fileEntity.getFilePath());
+        Path filePath = Paths.get(uploadDir,fileEntity.getStoredName()); //수정 원인 및 오류 발생원인 >(/uploads/abcdef123.png) DB에 저장된 경로 사용시 다른 운영체제에서 에러발생
+        //그러기에 실제 서버의 업로드 경로와 파일명을 조합해서 삭제 로직 진행(C:/project/uploads/abcdef123.png)
 
         try {
             if(Files.exists(filePath)) {

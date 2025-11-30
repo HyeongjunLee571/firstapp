@@ -305,7 +305,7 @@
                     onmouseout="hidePreview()"
                     style="cursor:pointer;">
             <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a></h3> <!--get 요청 -->
-            작성자 <p th:text="${username}"></p>
+            작성자 <p th:text="${post.author}"></p>
             내용 <p th:text="${post.content}"></p>
 
             <div class="button-group">

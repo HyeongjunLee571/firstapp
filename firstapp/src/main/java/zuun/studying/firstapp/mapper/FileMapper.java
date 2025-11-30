@@ -3,6 +3,8 @@ package zuun.studying.firstapp.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import zuun.studying.firstapp.Dto.FileDto;
 import zuun.studying.firstapp.entity.FileEntity;
+
+import java.io.File;
 import java.util.List;
 
 @Mapper

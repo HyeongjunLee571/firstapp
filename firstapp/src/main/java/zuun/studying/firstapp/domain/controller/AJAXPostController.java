@@ -42,18 +42,9 @@ public class AJAXPostController {
 
         String username = user.getUsername();
 
-        Comment savecomment = commentService.addComment(id,commentDto,username);
+        CommentResponseDto savecomment = commentService.addComment(id,commentDto,username);
 
-        CommentResponseDto Comment = new CommentResponseDto(
-                savecomment.getId(),
-                username,
-                savecomment.getContent(),
-                savecomment.getLikes(),
-                savecomment.getPostId()// 어느 게시글에 댓글이 들어가는지 파악하기 위함(필수) 좋아요 증가시도 사용
-                //게시글 내에 다른거 추가시 id값 필수로 넘길것
-        );
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(true,"댓글 등록 완료",Comment));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(true,"댓글 등록 완료",savecomment));
 
     }
 

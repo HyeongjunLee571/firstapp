@@ -38,7 +38,11 @@
     </select>
 
     <delete id="deleteCommentByPostId" parameterType="long">
-        DELETE FROM comments WHERE Post_id = #{id}
+        DELETE FROM comments WHERE post_id = #{id}
+    </delete>
+
+    <delete id="deleteCommentById" parameterType="long">
+        DELETE FROM comments WHERE id = #{id}
     </delete>
 
     <update id="updateCommentLikes" parameterType="long">

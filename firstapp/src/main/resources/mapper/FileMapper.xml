@@ -3,13 +3,21 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="zuun.studying.firstapp.mapper.FileMapper">
 
+<resultMap id="FileDtoMap" type="zuun.studying.firstapp.Dto.FileDto">
+    <id property="id" column="id"/>
+    <result property="postId" column="post_id"/>
+    <result property="storedName" column="stored_name"/>
+    <result property="filePath" column="file_path"/>
+    <result property="fileType" column="file_type"/>
+</resultMap>
+
     <insert id="insertFile" parameterType="zuun.studying.firstapp.entity.FileEntity">
-        INSERT INTO files (original_name, stored_name, file_path, file_type,post_id)
-        VALUES (#{originalName},#{storedName},#{filePath},#{fileType},#{postId})
+        INSERT INTO files (original_name, stored_name, file_path, file_type,post_id,created_at)
+        VALUES (#{originalName},#{storedName},#{filePath},#{fileType},#{postId},NOW())
     </insert>
 
-    <select id="findFilesByPostId" parameterType="long" resultType="zuun.studying.firstapp.Dto.FileDto">
-        SELECT id,post_id AS postId,original_name AS originalName, stored_name AS storedName, file_path AS filePath,file_type AS fileType  created_at
+    <select id="findFilesByPostId" parameterType="long" resultMap="FileDtoMap">
+        SELECT id,post_id,original_name, stored_name, file_path,file_type,created_at
         FROM files
         WHERE post_id = #{postId}
     </select>

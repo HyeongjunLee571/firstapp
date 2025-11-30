@@ -4,7 +4,7 @@
 <mapper namespace="zuun.studying.firstapp.mapper.UserMapper">
     <!-- 유저 조회 -->
     <select id="findByUsername" parameterType="string" resultType="zuun.studying.firstapp.Dto.UserResponseDto">
-        SELECT id,username,password,email,userRole,created_at
+        SELECT id,username,email,created_at
         FROM users
         WHERE username = #{username}
             LIMIT 1
@@ -21,4 +21,10 @@
         INSERT INTO users (username,password,email,userRole,created_at)
         VALUES (#{username},#{password},#{email},#{userRole},Now())
     </insert>
+
+    <select id="findEntityByUsername" parameterType="string" resultType="zuun.studying.firstapp.entity.User">
+        SELECT *
+        FROM users
+        WHERE username = #{username}
+    </select>
 </mapper>

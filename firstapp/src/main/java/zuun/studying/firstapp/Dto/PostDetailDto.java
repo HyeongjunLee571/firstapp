@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,9 +18,9 @@ public class PostDetailDto {
     private Long id;
     private String title;
     private String content;
-    private int likes;
-    private UserDto user;
-    private List<FileDto> files;
+    private Integer likes;
+    private UserResponseDto user;
+    private List<FileDto> files = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
